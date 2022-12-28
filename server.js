@@ -59,7 +59,7 @@ createUser(user: UserInput): User
 
 
 const user = {
-  name: "Truly Mittal",
+  name: "romi Mittal",
   age: 26,
   college: "IIt Guwahati",
 };

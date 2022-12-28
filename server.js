@@ -1,61 +1,39 @@
 const express = require("express");
 const { buildSchema } = require("graphql");
 const { graphqlHTTP } = require("express-graphql");
+var sql = require("mssql/msnodesqlv8");
 const axios = require("axios");
-const sql = require('mssql/msnodesqlv8');
+
+
 const app = express();
-
-
-
-
-/*
-ID
-String
-Int
-Float
-Boolean
-List -[]
-*/
-
-let message = "This is a message";
 
 const schema = buildSchema(`
 
-type Post {
-    userID: Int
-    id: Int
-    title: String
-    body: String
-}
+    type Post {
+        userId: Int
+        id: Int
+        title: String
+        body: String
+    }
+    
+    type User {
+        name: String
+        age: Int
+        college: String
+    }
 
-type User {
-    name: String
-    age: Int
-    college: String
-}
-
-type Query {
-    hello: String!
-    welcomeMessage(name: String, dayOfWeek: String!): String
-    getUser: User
-    getUsers: [User] 
-    getPostsFromExternalAPI: [Post]
-    message: String
-}
-
-input UserInput {
-  name: String!
-  age: Int!
-  college: String!
-}
-
-type Mutation {
-setMessage(newMessage: String): String
-createUser(user: UserInput): User
-}
+    type Query {
+        hello: String!
+        welcomeMessage(name: String, dayOfWeek: String!): String
+        getUser: User
+        getUsers: [User]
+        getPostsFromExternalAPI: [Post]
+    }
 
 `);
-// createUser(name: String, age: Int!, college: String!): User
+
+var data = '';
+
 
 
 const user = {
@@ -63,71 +41,55 @@ const user = {
   age: 26,
   college: "IIt Guwahati",
 };
+var config = {
+  connectionString:
+    "Driver=SQL Server;Server=ROMISEGAL\\SQLEXPRESS;Database=graphQl;Trusted_Connection=true;",
 
-const users = [
-  {
-    name: "Truly Mittal",
-    age: 26,
-    college: "IIt Guwahati",
-  },
-  {
-    name: "Jhon Doe",
-    age: 265,
-    college: "Exemple",
-  },
-];
+};
+sql.connect(config, (err) => {
+  new sql.Request().query("SELECT * FROM newUser", (err, result) => {
+    console.log(".:The Good Place:.");
+    if (err) {
+      // SQL error, but connection OK.
+      console.log("  Shirtballs: " + err);
+    } else {
+      // All is rosey in your garden.
+      data = result;
+      console.log(data.recordset);
+    }
+  });
+});
+sql.on("error", (err) => {
+  // Connection borked.
+  console.log(".:The Bad Place:.");
+  console.log("  Fork: " + err);
+});
 
-const root = {
+var root = {
   hello: () => {
-    return "hello world!";
-    // return null;
+    return "Hello ";
   },
   welcomeMessage: (args) => {
-    console.log(args);
-    return `Hey ${args.name}, hows life, today is ${args.dayOfWeek}`;
+    return `Hey ${args.name}, today is ${args.dayOfWeek}`;
   },
   getUser: () => {
+    const user = {
+      name: "Romi",
+      age: 25,
+      college: "ness",
+    };
     return user;
   },
   getUsers: () => {
-    return users;
+    return data.recordset;
   },
-  getPostsFromExternalAPI: async () => {
-    const res = axios
-      .get("https://dummyjson.com/products/")
-      .then((result) => result.data.products);
-    return res;
+  getPostsFromExternalAPI: () => {
+    return axios
+      .get("https://jsonplaceholder.typicode.com/posts")
+      .then(result => result.data);
   },
-  setMessage: ({ newMessage }) => {
-    message = newMessage;
-    return message;
-  },
-  message: () => message,
-  createUser: (args) => {
-    console.log(args);
-    return args.user;
-  },
-  getUser: ()=>{
-    const config = {
-      connectionString: 'Driver=SQL Server;Server=MENIR\\SQLEXPRESS;Database=graphQl;Trusted_Connection=true;'
-    };
-    sql.connect(config, err => {
-      new sql.Request().query('SELECT * from newUser', (err, result) => {
-        console.log(".:The Good Place:.");
-        if(err) { // SQL error, but connection OK.
-          console.log("  Shirtballs: "+ err);
-        } else { // All is rosey in your garden.
-          console.log(result);
-          return result;
-        };
-      });
-    });
-    sql.on('error', err => { // Connection borked.
-      console.log(".:The Bad Place:.");
-      console.log("  Fork: "+ err);
-    });
-  }
 };
+
 app.use(
   "/graphql",
   graphqlHTTP({
@@ -137,4 +99,4 @@ app.use(
   })
 );
 
-app.listen(4000, () => console.log("* server on port 4000"));
+app.listen(4000, () => console.log("Server on port 4000"));

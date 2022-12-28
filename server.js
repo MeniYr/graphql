@@ -36,9 +36,15 @@ var data = '';
 
 
 
+const user = {
+  name: "romi Mittal",
+  age: 26,
+  college: "IIt Guwahati",
+};
 var config = {
   connectionString:
     "Driver=SQL Server;Server=ROMISEGAL\\SQLEXPRESS;Database=graphQl;Trusted_Connection=true;",
+
 };
 sql.connect(config, (err) => {
   new sql.Request().query("SELECT * FROM newUser", (err, result) => {

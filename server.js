@@ -61,7 +61,7 @@ sql.on("error", (err) => {
 
 var root = {
   hello: () => {
-    return "Hello World";
+    return "Hello ";
   },
   welcomeMessage: (args) => {
     return `Hey ${args.name}, today is ${args.dayOfWeek}`;

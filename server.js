@@ -2,7 +2,11 @@ const express = require("express");
 const { buildSchema } = require("graphql");
 const { graphqlHTTP } = require("express-graphql");
 const axios = require("axios");
+const sql = require('mssql/msnodesqlv8');
 const app = express();
+
+
+
 
 /*
 ID
@@ -103,6 +107,26 @@ const root = {
     console.log(args);
     return args.user;
   },
+  getUser: ()=>{
+    const config = {
+      connectionString: 'Driver=SQL Server;Server=MENIR\\SQLEXPRESS;Database=graphQl;Trusted_Connection=true;'
+    };
+    sql.connect(config, err => {
+      new sql.Request().query('SELECT * from newUser', (err, result) => {
+        console.log(".:The Good Place:.");
+        if(err) { // SQL error, but connection OK.
+          console.log("  Shirtballs: "+ err);
+        } else { // All is rosey in your garden.
+          console.log(result);
+          return result;
+        };
+      });
+    });
+    sql.on('error', err => { // Connection borked.
+      console.log(".:The Bad Place:.");
+      console.log("  Fork: "+ err);
+    });
+  }
 };
 app.use(
   "/graphql",

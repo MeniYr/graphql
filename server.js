@@ -2,11 +2,8 @@ const express = require("express");
 const { buildSchema } = require("graphql");
 const { graphqlHTTP } = require("express-graphql");
 const axios = require("axios");
-const sql = require('mssql/msnodesqlv8');
+const sql = require("mssql/msnodesqlv8");
 const app = express();
-
-
-
 
 /*
 ID
@@ -18,7 +15,7 @@ List -[]
 */
 
 let message = "This is a message";
-
+let data="";
 const schema = buildSchema(`
 
 type Post {
@@ -29,7 +26,7 @@ type Post {
 }
 
 type User {
-    name: String
+    student_name: String
     age: Int
     college: String
 }
@@ -40,6 +37,7 @@ type Query {
     getUser: User
     getUsers: [User] 
     getPostsFromExternalAPI: [Post]
+    getFromSq: [User]
     message: String
 }
 
@@ -57,6 +55,28 @@ createUser(user: UserInput): User
 `);
 // createUser(name: String, age: Int!, college: String!): User
 
+const config = {
+  connectionString:
+    "Driver=SQL Server;Server=MENIR\\SQLEXPRESS;Database=graphQL;Trusted_Connection=true;",
+};
+sql.connect(config, (err) => {
+  new sql.Request().query("SELECT * from users ", (err, result) => {
+    console.log(".:The Good Place:.");
+    if (err) {
+      // SQL error, but connection OK.
+      console.log("  Shirtballs: " + err);
+    } else {
+      // All is rosey in your garden.
+      console.log(result.recordset);
+      data = result;
+    }
+  });
+});
+sql.on("error", (err) => {
+  // Connection borked.
+  console.log(".:The Bad Place:.");
+  console.log("  Fork: " + err);
+});
 
 const user = {
   name: "Truly Mittal",
@@ -86,9 +106,7 @@ const root = {
     console.log(args);
     return `Hey ${args.name}, hows life, today is ${args.dayOfWeek}`;
   },
-  getUser: () => {
-    return user;
-  },
+
   getUsers: () => {
     return users;
   },
@@ -107,25 +125,12 @@ const root = {
     console.log(args);
     return args.user;
   },
-  getUser: ()=>{
-    const config = {
-      connectionString: 'Driver=SQL Server;Server=MENIR\\SQLEXPRESS;Database=graphQl;Trusted_Connection=true;'
-    };
-    sql.connect(config, err => {
-      new sql.Request().query('SELECT * from newUser', (err, result) => {
-        console.log(".:The Good Place:.");
-        if(err) { // SQL error, but connection OK.
-          console.log("  Shirtballs: "+ err);
-        } else { // All is rosey in your garden.
-          console.log(result);
-          return result;
-        };
-      });
-    });
-    sql.on('error', err => { // Connection borked.
-      console.log(".:The Bad Place:.");
-      console.log("  Fork: "+ err);
-    });
+  getUser: () => {
+    console.log(data.recordset);
+    return user;
+  },
+  getFromSq: () =>{
+    return data.recordset
   }
 };
 app.use(

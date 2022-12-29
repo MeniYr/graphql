@@ -59,7 +59,8 @@ const config = {
   connectionString:
     "Driver=SQL Server;Server=MENIR\\SQLEXPRESS;Database=graphQL;Trusted_Connection=true;",
 };
-sql.connect(config, (err) => {
+const SQLconnection = ()=>{
+  sql.connect(config, (err) => {
   new sql.Request().query("SELECT * from users ", (err, result) => {
     console.log(".:The Good Place:.");
     if (err) {
@@ -77,6 +78,8 @@ sql.on("error", (err) => {
   console.log(".:The Bad Place:.");
   console.log("  Fork: " + err);
 });
+}
+
 
 const user = {
   name: "Truly Mittal",
@@ -130,6 +133,7 @@ const root = {
     return user;
   },
   getFromSq: () =>{
+    SQLconnection()
     return data.recordset
   }
 };

@@ -41,15 +41,30 @@ type Query {
     message: String
 }
 
+input NameToAsk{
+  nameToAsk: String
+}
+
 input UserInput {
   name: String!
   age: Int!
   college: String!
 }
 
+input UserEditInput {
+  nameToAsk: String!
+  name: String!
+  age: Int!
+  college: String!
+}
+
+
 type Mutation {
 setMessage(newMessage: String): String
 createUser(user: UserInput): User
+editUser(user: UserEditInput): [User]
+createRowSq (user: UserInput): [User]
+deleteRowSq (user: NameToAsk): [User]
 }
 
 `);
@@ -80,6 +95,68 @@ sql.on("error", (err) => {
 });
 }
 
+const SQLEdtiConnection = ({nameToAsk, name,age, college})=>{
+  sql.connect(config, (err) => {
+  new sql.Request().query(`update users set name= (${name},age = ${age},college = ${college}) where name = ${nameToAsk}`, (err, result) => {
+    console.log(".:The Good Place:.");
+    if (err) {
+      // SQL error, but connection OK.
+      console.log("  Shirtballs: " + err);
+    } else {
+      // All is rosey in your garden.
+      console.log(result.recordset);
+      data = result;
+    }
+  });
+});
+sql.on("error", (err) => {
+  // Connection borked.
+  console.log(".:The Bad Place:.");
+  console.log("  Fork: " + err);
+});
+}
+
+const SQLCreateRowConnection = ({name,age, college})=>{
+  sql.connect(config, (err) => {
+  new sql.Request().query(`insert into users values (${name}, ${age}, ${college})`, (err, result) => {
+    console.log(".:The Good Place:.");
+    if (err) {
+      // SQL error, but connection OK.
+      console.log("  Shirtballs: " + err);
+    } else {
+      // All is rosey in your garden.
+      console.log(result.recordset);
+      data = result;
+    }
+  });
+});
+sql.on("error", (err) => {
+  // Connection borked.
+  console.log(".:The Bad Place:.");
+  console.log("  Fork: " + err);
+});
+}
+
+const SQLDeleteRowConnection = ({nameToAsk})=>{
+  sql.connect(config, (err) => {
+  new sql.Request().query(`delete from users where name=${nameToAsk})`, (err, result) => {
+    console.log(".:The Good Place:.");
+    if (err) {
+      // SQL error, but connection OK.
+      console.log("  Shirtballs: " + err);
+    } else {
+      // All is rosey in your garden.
+      console.log(result.recordset);
+      data = result;
+    }
+  });
+});
+sql.on("error", (err) => {
+  // Connection borked.
+  console.log(".:The Bad Place:.");
+  console.log("  Fork: " + err);
+});
+}
 
 const user = {
   name: "Truly Mittal",
@@ -124,6 +201,7 @@ const root = {
     return message;
   },
   message: () => message,
+  
   createUser: (args) => {
     console.log(args);
     return args.user;
@@ -135,7 +213,19 @@ const root = {
   getFromSq: () =>{
     SQLconnection()
     return data.recordset
-  }
+  },
+  editFromSq: ({nameToAsk, name, age, college}) =>{
+    SQLEdtiConnection(nameToAsk ,name, age, college)
+    return data.recordset
+  },
+  createRowSq: ({name, age, college}) =>{
+    SQLCreateRowConnection(name, age, college)
+    return data.recordset
+  },
+  deleteRowSq: ({nameToAsk}) =>{
+    SQLDeleteRowConnection(nameToAsk)
+    return data.recordset
+  },
 };
 app.use(
   "/graphql",

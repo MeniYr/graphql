@@ -26,6 +26,7 @@ type Post {
 }
 
 type User {
+    id:Int
     student_name: String
     age: Int
     college: String
@@ -65,8 +66,7 @@ input UserEditInput {
 type Mutation {
 setMessage(newMessage: String): String
 createUser(user: UserInput): User
-
-editFromSq(user: UserEditInput): User
+editFromSq (user: UserEditInput): User
 createRowSq (user: UserCreateInput): User
 deleteRowSq (id: Int): User
 }
@@ -123,7 +123,7 @@ const SQLEdtiConnection = (id, name, age, college) => {
   });
 };
 
-const SQLCreateRowConnection = (id, name, age, college ) => {
+const SQLCreateRowConnection = (id, name, age, college) => {
   sql.connect(config, (err) => {
     // console.log(id, name, age, college);
     new sql.Request().query(
@@ -230,17 +230,21 @@ const root = {
     return data.recordset;
   },
   editFromSq: (args) => {
-
     SQLEdtiConnection(
       args.user.id,
       args.user.student_name,
       args.user.age,
       args.user.college
     );
-    return args.user
+    return args.user;
   },
   createRowSq: (args) => {
-    SQLCreateRowConnection(args.user.id, args.user.student_name, args.user.age, args.user.college);
+    SQLCreateRowConnection(
+      args.user.id,
+      args.user.student_name,
+      args.user.age,
+      args.user.college
+    );
     // return args.user;
     console.log(args.user);
   },

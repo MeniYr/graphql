@@ -27,6 +27,7 @@ const schema = buildSchema(`
     
 
 type User {
+    id:Int
     student_name: String
     age: Int
     college: String
@@ -67,8 +68,7 @@ input UserEditInput {
 type Mutation {
 setMessage(newMessage: String): String
 createUser(user: UserInput): User
-
-editFromSq(user: UserEditInput): User
+editFromSq (user: UserEditInput): User
 createRowSq (user: UserCreateInput): User
 deleteRowSq (id: Int): User
 }
@@ -227,35 +227,30 @@ const root = {
 
   getUser: ()=>{
     return user;
-},
+  },
+  getFromSq: () => {
+    SQLconnection();
+    return data.recordset;
+  },
+  editFromSq: (args) => {
 
-getFromSq: () => {
-  SQLconnection();
-  return data.recordset;
-},
-
-editFromSq: (args) => {
-
-  SQLEdtiConnection(
-    args.user.id,
-    args.user.student_name,
-    args.user.age,
-    args.user.college
-  );
-  return args.user
-},
-
-createRowSq: (args) => {
-  SQLCreateRowConnection(args.user.id, args.user.student_name, args.user.age, args.user.college);
-  // return args.user;
-  console.log(args.user);
-},
-
-deleteRowSq: (args) => {
-  SQLDeleteRowConnection(args.id);
-  return args.id;
-},
-
+    SQLEdtiConnection(
+      args.user.id,
+      args.user.student_name,
+      args.user.age,
+      args.user.college
+    );
+    return args.user
+  },
+  createRowSq: (args) => {
+    SQLCreateRowConnection(args.user.id, args.user.student_name, args.user.age, args.user.college);
+    // return args.user;
+    console.log(args.user);
+  },
+  deleteRowSq: (args) => {
+    SQLDeleteRowConnection(args.id);
+    return args;
+  },
 };
 app.use(
 "/graphql",

@@ -18,12 +18,13 @@ let message = "This is a message";
 let data = "";
 const schema = buildSchema(`
 
-type Post {
-    userID: Int
-    id: Int
-    title: String
-    body: String
-}
+    type Post {
+        userId: Int
+        id: Int
+        title: String
+        body: String
+    }
+    
 
 type User {
     student_name: String
@@ -47,6 +48,7 @@ input UserInput {
   age: Int!
   college: String!
 }
+
 input UserCreateInput {
   id:Int!
   student_name: String!
@@ -72,7 +74,6 @@ deleteRowSq (id: Int): User
 }
 
 `);
-// createUser(name: String, age: Int!, college: String!): User
 
 const config = {
   connectionString:
@@ -123,7 +124,7 @@ const SQLEdtiConnection = (id, name, age, college) => {
   });
 };
 
-const SQLCreateRowConnection = (id, name, age, college ) => {
+const SQLCreateRowConnection = (id, name, age, college) => {
   sql.connect(config, (err) => {
     // console.log(id, name, age, college);
     new sql.Request().query(
@@ -175,7 +176,7 @@ const SQLDeleteRowConnection = (id) => {
 };
 
 const user = {
-  name: "Truly Mittal",
+  name: "romi Mittal",
   age: 26,
   college: "IIt Guwahati",
 };
@@ -195,67 +196,74 @@ const users = [
 
 const root = {
   hello: () => {
-    return "hello world!";
-    // return null;
+    return "Hello ";
   },
+
   welcomeMessage: (args) => {
-    console.log(args);
-    return `Hey ${args.name}, hows life, today is ${args.dayOfWeek}`;
+    return `Hey ${args.name}, today is ${args.dayOfWeek}`;
   },
 
   getUsers: () => {
-    return users;
+    return data.recordset;
   },
+
   getPostsFromExternalAPI: async () => {
     const res = axios
       .get("https://dummyjson.com/products/")
       .then((result) => result.data.products);
     return res;
   },
+
   setMessage: ({ newMessage }) => {
     message = newMessage;
     return message;
   },
+
   message: () => message,
 
   createUser: (args) => {
     return args.user;
   },
-  getUser: () => {
-    console.log(data.recordset);
-    return user;
-  },
-  getFromSq: () => {
-    SQLconnection();
-    return data.recordset;
-  },
-  editFromSq: (args) => {
 
-    SQLEdtiConnection(
-      args.user.id,
-      args.user.student_name,
-      args.user.age,
-      args.user.college
-    );
-    return args.user
-  },
-  createRowSq: (args) => {
-    SQLCreateRowConnection(args.user.id, args.user.student_name, args.user.age, args.user.college);
-    // return args.user;
-    console.log(args.user);
-  },
-  deleteRowSq: (args) => {
-    SQLDeleteRowConnection(args.id);
-    return args;
-  },
+  getUser: ()=>{
+    return user;
+},
+
+getFromSq: () => {
+  SQLconnection();
+  return data.recordset;
+},
+
+editFromSq: (args) => {
+
+  SQLEdtiConnection(
+    args.user.id,
+    args.user.student_name,
+    args.user.age,
+    args.user.college
+  );
+  return args.user
+},
+
+createRowSq: (args) => {
+  SQLCreateRowConnection(args.user.id, args.user.student_name, args.user.age, args.user.college);
+  // return args.user;
+  console.log(args.user);
+},
+
+deleteRowSq: (args) => {
+  SQLDeleteRowConnection(args.id);
+  return args.id;
+},
+
 };
 app.use(
-  "/graphql",
-  graphqlHTTP({
-    graphiql: true,
-    schema: schema,
-    rootValue: root,
-  })
+"/graphql",
+graphqlHTTP({
+  graphiql: true,
+  schema: schema,
+  rootValue: root,
+})
 );
 
 app.listen(4000, () => console.log("* server on port 4000"));

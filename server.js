@@ -15,7 +15,7 @@ List -[]
 */
 
 let message = "This is a message";
-let data="";
+let data = "";
 const schema = buildSchema(`
 
 type Post {
@@ -46,14 +46,20 @@ input NameToAsk{
 }
 
 input UserInput {
-  name: String!
+  student_name: String!
+  age: Int!
+  college: String!
+}
+input UserCreateInput {
+  id:Int!
+  student_name: String!
   age: Int!
   college: String!
 }
 
 input UserEditInput {
-  nameToAsk: String!
-  name: String!
+  id: Int!
+  student_name: String!
   age: Int!
   college: String!
 }
@@ -62,9 +68,9 @@ input UserEditInput {
 type Mutation {
 setMessage(newMessage: String): String
 createUser(user: UserInput): User
-editUser(user: UserEditInput): [User]
-createRowSq (user: UserInput): [User]
-deleteRowSq (user: NameToAsk): [User]
+editFromSq(user: UserEditInput): [User]
+createRowSq (user: UserCreateInput): [User]
+deleteRowSq (id: Int): User
 }
 
 `);
@@ -74,89 +80,101 @@ const config = {
   connectionString:
     "Driver=SQL Server;Server=MENIR\\SQLEXPRESS;Database=graphQL;Trusted_Connection=true;",
 };
-const SQLconnection = ()=>{
+const SQLconnection = () => {
   sql.connect(config, (err) => {
-  new sql.Request().query("SELECT * from users ", (err, result) => {
-    console.log(".:The Good Place:.");
-    if (err) {
-      // SQL error, but connection OK.
-      console.log("  Shirtballs: " + err);
-    } else {
-      // All is rosey in your garden.
-      console.log(result.recordset);
-      data = result;
-    }
+    new sql.Request().query("SELECT * from users ", (err, result) => {
+      console.log(".:The Good Place:.");
+      if (err) {
+        // SQL error, but connection OK.
+        console.log("  Shirtballs: " + err);
+      } else {
+        // All is rosey in your garden.
+        console.log(result.recordset);
+        data = result;
+      }
+    });
   });
-});
-sql.on("error", (err) => {
-  // Connection borked.
-  console.log(".:The Bad Place:.");
-  console.log("  Fork: " + err);
-});
-}
+  sql.on("error", (err) => {
+    // Connection borked.
+    console.log(".:The Bad Place:.");
+    console.log("  Fork: " + err);
+  });
+};
 
-const SQLEdtiConnection = ({nameToAsk, name,age, college})=>{
+const SQLEdtiConnection = (id, name, age, college) => {
   sql.connect(config, (err) => {
-  new sql.Request().query(`update users set name= (${name},age = ${age},college = ${college}) where name = ${nameToAsk}`, (err, result) => {
-    console.log(".:The Good Place:.");
-    if (err) {
-      // SQL error, but connection OK.
-      console.log("  Shirtballs: " + err);
-    } else {
-      // All is rosey in your garden.
-      console.log(result.recordset);
-      data = result;
-    }
+    new sql.Request().query(
+      `update users set student_name='${name}',age = ${age},college = '${college}' where id = ${id}`,
+      (err, result) => {
+        console.log(".:The Good Place:.");
+        if (err) {
+          // SQL error, but connection OK.
+          console.log("  Shirtballs: " + err);
+        } else {
+          // All is rosey in your garden.
+          if (result.rowsAffected[0] == 1) data = "succeded";
+          else data = "fail";
+        }
+      }
+    );
   });
-});
-sql.on("error", (err) => {
-  // Connection borked.
-  console.log(".:The Bad Place:.");
-  console.log("  Fork: " + err);
-});
-}
+  sql.on("error", (err) => {
+    // Connection borked.
+    console.log(".:The Bad Place:.");
+    console.log("  Fork: " + err);
+  });
+};
 
-const SQLCreateRowConnection = ({name,age, college})=>{
+const SQLCreateRowConnection = (id, name, age, college ) => {
   sql.connect(config, (err) => {
-  new sql.Request().query(`insert into users values (${name}, ${age}, ${college})`, (err, result) => {
-    console.log(".:The Good Place:.");
-    if (err) {
-      // SQL error, but connection OK.
-      console.log("  Shirtballs: " + err);
-    } else {
-      // All is rosey in your garden.
-      console.log(result.recordset);
-      data = result;
-    }
+    // console.log(id, name, age, college);
+    new sql.Request().query(
+      `insert into users values (${id}, '${name}', ${age}, '${college}')`,
+      (err, result) => {
+        console.log(".:The Good Place:.");
+        if (err) {
+          // SQL error, but connection OK.
+          console.log("  Shirtballs: " + err);
+          // data = err
+        } else {
+          // All is rosey in your garden.
+          console.log(result);
+          data = result;
+        }
+      }
+    );
   });
-});
-sql.on("error", (err) => {
-  // Connection borked.
-  console.log(".:The Bad Place:.");
-  console.log("  Fork: " + err);
-});
-}
+  sql.on("error", (err) => {
+    // Connection borked.
+    console.log(".:The Bad Place:.");
+    console.log("  Fork: " + err);
+  });
+};
 
-const SQLDeleteRowConnection = ({nameToAsk})=>{
+const SQLDeleteRowConnection = (id) => {
   sql.connect(config, (err) => {
-  new sql.Request().query(`delete from users where name=${nameToAsk})`, (err, result) => {
-    console.log(".:The Good Place:.");
-    if (err) {
-      // SQL error, but connection OK.
-      console.log("  Shirtballs: " + err);
-    } else {
-      // All is rosey in your garden.
-      console.log(result.recordset);
-      data = result;
-    }
+    console.log(id);
+    new sql.Request().query(
+      `delete from users where id=${id}`,
+      (err, result) => {
+        console.log(".:The Good Place:.");
+        if (err) {
+          // SQL error, but connection OK.
+          console.log("  Shirtballs: " + err);
+        } else {
+          // All is rosey in your garden.
+          console.log(result.recordset);
+          data = result;
+        }
+      }
+    );
   });
-});
-sql.on("error", (err) => {
-  // Connection borked.
-  console.log(".:The Bad Place:.");
-  console.log("  Fork: " + err);
-});
-}
+  sql.on("error", (err) => {
+    // Connection borked.
+    console.log(".:The Bad Place:.");
+    console.log("  Fork: " + err);
+  });
+};
 
 const user = {
   name: "Truly Mittal",
@@ -201,7 +219,7 @@ const root = {
     return message;
   },
   message: () => message,
-  
+
   createUser: (args) => {
     console.log(args);
     return args.user;
@@ -210,21 +228,28 @@ const root = {
     console.log(data.recordset);
     return user;
   },
-  getFromSq: () =>{
-    SQLconnection()
-    return data.recordset
+  getFromSq: () => {
+    SQLconnection();
+    return data.recordset;
   },
-  editFromSq: ({nameToAsk, name, age, college}) =>{
-    SQLEdtiConnection(nameToAsk ,name, age, college)
-    return data.recordset
+  editFromSq: (args) => {
+    SQLEdtiConnection(
+      args.user.id,
+      args.user.student_name,
+      args.user.age,
+      args.user.college
+    );
+    console.log("dada:",data);
+    return args.user
   },
-  createRowSq: ({name, age, college}) =>{
-    SQLCreateRowConnection(name, age, college)
-    return data.recordset
+  createRowSq: (args) => {
+    SQLCreateRowConnection(args.user.id, args.user.student_name, args.user.age, args.user.college);
+    // return args.user;
+    console.log(args.user);
   },
-  deleteRowSq: ({nameToAsk}) =>{
-    SQLDeleteRowConnection(nameToAsk)
-    return data.recordset
+  deleteRowSq: (args) => {
+    SQLDeleteRowConnection(args.id);
+    return args;
   },
 };
 app.use(

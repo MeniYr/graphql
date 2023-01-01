@@ -41,9 +41,6 @@ type Query {
     message: String
 }
 
-input NameToAsk{
-  nameToAsk: String
-}
 
 input UserInput {
   student_name: String!
@@ -68,8 +65,9 @@ input UserEditInput {
 type Mutation {
 setMessage(newMessage: String): String
 createUser(user: UserInput): User
-editFromSq(user: UserEditInput): [User]
-createRowSq (user: UserCreateInput): [User]
+
+editFromSq(user: UserEditInput): User
+createRowSq (user: UserCreateInput): User
 deleteRowSq (id: Int): User
 }
 
@@ -221,7 +219,6 @@ const root = {
   message: () => message,
 
   createUser: (args) => {
-    console.log(args);
     return args.user;
   },
   getUser: () => {
@@ -233,13 +230,13 @@ const root = {
     return data.recordset;
   },
   editFromSq: (args) => {
+
     SQLEdtiConnection(
       args.user.id,
       args.user.student_name,
       args.user.age,
       args.user.college
     );
-    console.log("dada:",data);
     return args.user
   },
   createRowSq: (args) => {
